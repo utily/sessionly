@@ -1,5 +1,5 @@
 import { isly } from "isly"
-import { typedly } from "../../typedly"
+import { typedly } from "typedly"
 import { Controller as ListenableController } from "./Controller"
 import { Listeners as ListenableListeners } from "./Listeners"
 import { Options as ListenableOptions } from "./Options"

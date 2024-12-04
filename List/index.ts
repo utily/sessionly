@@ -1,5 +1,5 @@
 import { http } from "cloudly-http"
-import { typedly } from "../../typedly"
+import { typedly } from "typedly"
 import { Factory } from "../Factory"
 import { Listenable } from "../Listenable"
 import { Configuration as ListConfiguration } from "./Configuration"

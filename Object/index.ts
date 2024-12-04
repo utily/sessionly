@@ -1,4 +1,4 @@
-import { typedly } from "../../typedly"
+import { typedly } from "typedly"
 import type { Factory } from "../Factory"
 import { Listenable } from "../Listenable"
 import { Configuration as ObjectConfiguration } from "./Configuration"

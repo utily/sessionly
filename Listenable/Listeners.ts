@@ -1,4 +1,4 @@
-import { typedly } from "../../typedly"
+import { typedly } from "typedly"
 import { Controller } from "./Controller"
 import { Options } from "./Options"
 

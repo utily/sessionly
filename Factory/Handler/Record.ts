@@ -1,17 +1,17 @@
 import { typedly } from "typedly"
 import { Listenable } from "../../Listenable"
-import { SessionlyRecord } from "../../Record"
+import { _Record } from "../../Record"
 import type { Factory } from "../index"
 import { navigation } from "../navigation"
 import { Handler as Base } from "./Base"
 
-export class RecordHandler<T> extends Base<SessionlyRecord<T>> {
+export class RecordHandler<T> extends Base<_Record<T>> {
 	private backend: () => T
-	private listeners: Listenable.Listeners<SessionlyRecord.ListenableParameters<T>>
-	private configuration: RecordHandler.Configuration<SessionlyRecord.Configuration<any>>
-	constructor(factory: Factory, configuration: SessionlyRecord.Configuration<T>, backend: T) {
+	private listeners: Listenable.Listeners<_Record.ListenableParameters<T>>
+	private configuration: RecordHandler.Configuration<_Record.Configuration<any>>
+	constructor(factory: Factory, configuration: _Record.Configuration<T>, backend: T) {
 		const processed = RecordHandler.processConfiguration(configuration)
-		const { result, ...internals } = SessionlyRecord.create(processed, backend, factory)
+		const { result, ...internals } = _Record.create(processed, backend, factory)
 		super(factory, result)
 		this.listeners = internals.listeners
 		this.backend = internals.backend
@@ -77,8 +77,8 @@ export class RecordHandler<T> extends Base<SessionlyRecord<T>> {
 		}
 	}
 	private static processConfiguration<T>(
-		configuration: SessionlyRecord.Configuration<T>
-	): RecordHandler.Configuration<SessionlyRecord.Configuration<T>> {
+		configuration: _Record.Configuration<T>
+	): RecordHandler.Configuration<_Record.Configuration<T>> {
 		return {
 			...(({ load, ...configuration }) => configuration)(configuration),
 			...(configuration.load && {
@@ -91,12 +91,12 @@ export class RecordHandler<T> extends Base<SessionlyRecord<T>> {
 	}
 }
 export namespace RecordHandler {
-	export type Configuration<TConfiguration extends SessionlyRecord.Configuration<any>> =
-		TConfiguration extends SessionlyRecord.Configuration<infer T>
+	export type Configuration<TConfiguration extends _Record.Configuration<any>> =
+		TConfiguration extends _Record.Configuration<infer T>
 			? {
-					[Configuration in keyof SessionlyRecord.Configuration<T>]?: Configuration extends "load"
-						? typedly.Promise.Lazy<Required<SessionlyRecord.Configuration<T>>["load"]>
-						: SessionlyRecord.Configuration<T>[Configuration]
+					[Configuration in keyof _Record.Configuration<T>]?: Configuration extends "load"
+						? typedly.Promise.Lazy<Required<_Record.Configuration<T>>["load"]>
+						: _Record.Configuration<T>[Configuration]
 			  }
 			: never
 }

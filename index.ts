@@ -3,8 +3,8 @@ import { Factory as sessionlyFactory } from "./Factory"
 import { List as sessionlyList } from "./List"
 import { Listenable as sessionlyListenable } from "./Listenable"
 import { Loadable as sessionlyLoadable } from "./Loadable"
-import { SessionlyObject as sessionlyObject } from "./Object"
-import { SessionlyRecord as sessionlyRecord } from "./Record"
+import { _Object as sessionlyObject } from "./Object"
+import { _Record as sessionlyRecord } from "./Record"
 
 export namespace sessionly {
 	export import Errors = sessionlyErrors

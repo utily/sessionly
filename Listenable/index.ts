@@ -1,8 +1,8 @@
 import { isly } from "isly"
 import { typedly } from "typedly"
-import { Controller as ListenableController } from "./Controller"
-import { Listeners as ListenableListeners } from "./Listeners"
-import { Options as ListenableOptions } from "./Options"
+import { Controller as _Controller } from "./Controller"
+import { Listeners as _Listeners } from "./Listeners"
+import { Options as _Options } from "./Options"
 
 // TODO must support unlisten to be compatible with userwidgets / smoothly.Listenable
 export interface Listenable<T extends { [Event in keyof typedly.Object<T>]: any[] }> {
@@ -14,9 +14,9 @@ export interface Listenable<T extends { [Event in keyof typedly.Object<T>]: any[
 	unlisten(listener: (...args: any[]) => any): void
 }
 export namespace Listenable {
-	export import Controller = ListenableController
-	export import Listeners = ListenableListeners
-	export import Options = ListenableOptions
+	export import Controller = _Controller
+	export import Listeners = _Listeners
+	export import Options = _Options
 	export const { type, is, flawed } = isly
 		.object<Listenable<object>>(
 			{

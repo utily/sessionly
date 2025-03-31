@@ -3,10 +3,8 @@ import { Listenable } from "../Listenable"
 import { Configuration as RecordConfiguration } from "./Configuration"
 
 const promise = new Promise(resolve => resolve(true))
-export type SessionlyRecord<T> = T &
-	Listenable<Required<SessionlyRecord.ListenableParameters<T>>> &
-	SessionlyRecord.Symbol
-export namespace SessionlyRecord {
+export type _Record<T> = T & Listenable<Required<_Record.ListenableParameters<T>>> & _Record.Symbol
+export namespace _Record {
 	const symbol: unique symbol = Symbol("Record")
 	export type Symbol = globalThis.Record<typeof symbol, typeof symbol>
 	export import Configuration = RecordConfiguration
@@ -16,12 +14,12 @@ export namespace SessionlyRecord {
 			: [value: T[keyof T], event: keyof T]
 	}
 	export type FactoryReturn<T> = {
-		result: SessionlyRecord<T>
+		result: _Record<T>
 		backend: () => T
 		listeners: Listenable.Listeners<ListenableParameters<T>>
 	}
 
-	export function create<T>(configuration: Configuration<SessionlyRecord<T>>, target: T): SessionlyRecord<T>
+	export function create<T>(configuration: Configuration<_Record<T>>, target: T): _Record<T>
 	export function create<T>(
 		configuration: Configuration<T>,
 		target: T,
@@ -31,7 +29,7 @@ export namespace SessionlyRecord {
 		configuration: Configuration<T>,
 		target: T,
 		factory?: Factory<Listenable<any>>
-	): SessionlyRecord<T> | FactoryReturn<T> {
+	): _Record<T> | FactoryReturn<T> {
 		const listeners = Listenable.Listeners.create<ListenableParameters<T>>()
 		const controllers = new Map<(...args: any) => any, Listenable.Controller>()
 		const backend = Object.defineProperties(target, {
@@ -72,9 +70,9 @@ export namespace SessionlyRecord {
 					controllers.delete(listener)
 				},
 			},
-		}) as SessionlyRecord<T>
-		const result = new Proxy<SessionlyRecord<T>>(backend, {
-			get(backend: T, p: keyof any, session: SessionlyRecord<T>): T[keyof T] | undefined {
+		}) as _Record<T>
+		const result = new Proxy<_Record<T>>(backend, {
+			get(backend: T, p: keyof any, session: _Record<T>): T[keyof T] | undefined {
 				const property = p as T[keyof T]
 				const current = backend[property]
 				let result: T[keyof T] | undefined = current
@@ -97,7 +95,7 @@ export namespace SessionlyRecord {
 				}
 				return result
 			},
-			set(backend: T, p: keyof any, value: T[keyof T], session: SessionlyRecord<T>): boolean {
+			set(backend: T, p: keyof any, value: T[keyof T], session: _Record<T>): boolean {
 				const property = p as T[keyof T]
 				if (property === "*")
 					return false
@@ -133,11 +131,11 @@ export namespace SessionlyRecord {
 		})
 		return !factory ? result : { result, backend: () => backend, listeners }
 	}
-	export function is(value: unknown): value is SessionlyRecord<globalThis.Record<string | number, unknown>> {
+	export function is(value: unknown): value is _Record<globalThis.Record<string | number, unknown>> {
 		return typeof value === "object" && !!value && symbol in value && value[symbol] === symbol
 	}
 	export function entries<T>(
-		object: SessionlyRecord<T> | T | undefined
+		object: _Record<T> | T | undefined
 	): [
 		Exclude<keyof T, keyof Listenable<ListenableParameters<T>> | keyof Symbol>,
 		T[Exclude<keyof T, keyof Listenable<ListenableParameters<T>> | keyof Symbol>]
@@ -145,12 +143,12 @@ export namespace SessionlyRecord {
 		return object == undefined ? [] : (globalThis.Object.entries(object) as ReturnType<typeof entries>)
 	}
 	export function values<T>(
-		object: SessionlyRecord<T> | T | undefined
+		object: _Record<T> | T | undefined
 	): T[Exclude<keyof T, keyof Listenable<ListenableParameters<T>> | keyof Symbol>][] {
 		return object == undefined ? [] : (globalThis.Object.values(object) as ReturnType<typeof values>)
 	}
 	export function keys<T>(
-		object: SessionlyRecord<T> | T | undefined
+		object: _Record<T> | T | undefined
 	): Exclude<keyof T, keyof Listenable<ListenableParameters<T> | keyof Symbol>>[] {
 		return object == undefined ? [] : (globalThis.Object.keys(object) as ReturnType<typeof keys>)
 	}

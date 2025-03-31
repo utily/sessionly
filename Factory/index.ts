@@ -1,8 +1,8 @@
 import { typedly } from "typedly"
 import { List } from "../List"
 import { Listenable } from "../Listenable"
-import { SessionlyObject } from "../Object"
-import { SessionlyRecord } from "../Record"
+import { _Object } from "../Object"
+import { _Record as _Record } from "../Record"
 import { Handler } from "./Handler"
 
 export class Factory<
@@ -18,24 +18,24 @@ export class Factory<
 		return this.#session !== undefined
 	}
 	private readonly handlers = globalThis.Object.assign(
-		new typedly.IterableWeakMap<SessionlyObject<any> | SessionlyRecord<any> | List<any>, Handler>(),
+		new typedly.IterableWeakMap<_Object<any> | _Record<any> | List<any>, Handler>(),
 		{
-			created: new typedly.IterableWeakMap<SessionlyObject<any> | SessionlyRecord<any> | List<any>, Handler>(),
-			started: new typedly.IterableWeakMap<SessionlyObject<any> | SessionlyRecord<any> | List<any>, Handler>(),
+			created: new typedly.IterableWeakMap<_Object<any> | _Record<any> | List<any>, Handler>(),
+			started: new typedly.IterableWeakMap<_Object<any> | _Record<any> | List<any>, Handler>(),
 		}
 	)
 
 	private constructor() {}
 
 	create<T>(type: "list", configuration: List.Configuration<T, TSession>, initial: T[] | undefined): List<T>
-	create<T>(type: "object", configuration: SessionlyObject.Configuration<T, TSession>, initial: T): SessionlyObject<T>
-	create<T>(type: "record", configuration: SessionlyRecord.Configuration<T, TSession>, initial: T): SessionlyRecord<T>
+	create<T>(type: "object", configuration: _Object.Configuration<T, TSession>, initial: T): _Object<T>
+	create<T>(type: "record", configuration: _Record.Configuration<T, TSession>, initial: T): _Record<T>
 	create<T>(
 		...argument:
 			| ["list", List.Configuration<T, TSession>, T[] | undefined]
-			| ["object", SessionlyObject.Configuration<T, TSession>, T]
-			| ["record", SessionlyRecord.Configuration<T, TSession>, T]
-	): SessionlyObject<T> | SessionlyRecord<T> | List<T> {
+			| ["object", _Object.Configuration<T, TSession>, T]
+			| ["record", _Record.Configuration<T, TSession>, T]
+	): _Object<T> | _Record<T> | List<T> {
 		const result =
 			argument[0] == "object"
 				? new Handler.Object(this, argument[1], argument[2])
@@ -62,10 +62,10 @@ export class Factory<
 		})
 		return session
 	}
-	reload<T>(object: SessionlyObject<T>, property: string): void
-	reload<T>(record: SessionlyRecord<T>, property: string): void
+	reload<T>(object: _Object<T>, property: string): void
+	reload<T>(record: _Record<T>, property: string): void
 	reload<T>(list: List<T>, event: "change"): void
-	reload<T>(session: SessionlyObject<T> | SessionlyRecord<T> | List<T>, event: string): void {
+	reload<T>(session: _Object<T> | _Record<T> | List<T>, event: string): void {
 		this.handlers.get(session)?.reload(event)
 	}
 	static create<TSession extends Listenable<globalThis.Record<string | number, any>>>(): Factory<TSession> {

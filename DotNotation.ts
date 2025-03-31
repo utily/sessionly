@@ -1,11 +1,11 @@
 import type { List } from "./List"
 import { Listenable } from "./Listenable"
-import type { SessionlyObject } from "./Object"
-import type { SessionlyRecord } from "./Record"
+import type { _Object } from "./Object"
+import type { _Record } from "./Record"
 
-type Mapping<T> = T extends SessionlyRecord.Symbol
+type Mapping<T> = T extends _Record.Symbol
 	? { [key: keyof any]: Extract<Exclude<keyof T, keyof Listenable<any>> | "*", string | number> }
-	: T extends SessionlyObject.Symbol
+	: T extends _Object.Symbol
 	? {
 			[Property in keyof T as string | number]: Property extends keyof Listenable<any>
 				? never
@@ -14,9 +14,9 @@ type Mapping<T> = T extends SessionlyRecord.Symbol
 					? `${Property}`
 					: T[Property] extends List.Symbol
 					? `${Property}.${keyof List.Events<any>}`
-					: T[Property] extends SessionlyRecord.Symbol
+					: T[Property] extends _Record.Symbol
 					? `${Property}.${Extract<Exclude<keyof T[Property], keyof Listenable<any>> | "*", string | number>}`
-					: T[Property] extends SessionlyObject.Symbol
+					: T[Property] extends _Object.Symbol
 					? `${Property}.${DotNotation<T[Property]>}`
 					: `${Property}`
 				: never

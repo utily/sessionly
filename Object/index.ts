@@ -1,24 +1,24 @@
 import { typedly } from "typedly"
 import type { Factory } from "../Factory"
 import { Listenable } from "../Listenable"
-import { Configuration as ObjectConfiguration } from "./Configuration"
+import { Configuration as _Configuration } from "./Configuration"
 
 const promise = new Promise(resolve => resolve(true))
-export type SessionlyObject<T extends typedly.Object<T>> = T &
-	Listenable<Required<SessionlyObject.ListenableParameters<T>>> &
-	SessionlyObject.Symbol
+export type _Object<T extends typedly.Object<T>> = T &
+	Listenable<Required<_Object.ListenableParameters<T>>> &
+	_Object.Symbol
 
-export namespace SessionlyObject {
+export namespace _Object {
 	const symbol: unique symbol = Symbol("Object")
 	export type Symbol = Record<typeof symbol, typeof symbol>
-	export import Configuration = ObjectConfiguration
+	export import Configuration = _Configuration
 	export type ListenableParameters<T> = { [Property in keyof T]: [value: T[Property], event: Property] }
 	export type FactoryReturn<T> = {
-		result: SessionlyObject<T>
+		result: _Object<T>
 		backend: () => T
 		listeners: Listenable.Listeners<ListenableParameters<T>>
 	}
-	export function create<T extends typedly.Object<T>>(configuration: Configuration<T>, target: T): SessionlyObject<T>
+	export function create<T extends typedly.Object<T>>(configuration: Configuration<T>, target: T): _Object<T>
 	export function create<T extends typedly.Object<T>>(
 		configuration: Configuration<T>,
 		target: T,
@@ -28,7 +28,7 @@ export namespace SessionlyObject {
 		configuration: Configuration<T>,
 		target: T,
 		factory?: Factory<Listenable<any>>
-	): SessionlyObject<T> | FactoryReturn<T> {
+	): _Object<T> | FactoryReturn<T> {
 		const controllers = new Map<(...argument: any[]) => any, Listenable.Controller>()
 		const listeners = Listenable.Listeners.create<ListenableParameters<T>>()
 		const backend = globalThis.Object.defineProperties(target, {
@@ -65,9 +65,9 @@ export namespace SessionlyObject {
 					controllers.delete(listener)
 				},
 			},
-		}) as SessionlyObject<T>
-		const result = new Proxy<SessionlyObject<T>>(backend, {
-			get(backend: T, p: string, session: SessionlyObject<T>): T[keyof T] | undefined {
+		}) as _Object<T>
+		const result = new Proxy<_Object<T>>(backend, {
+			get(backend: T, p: string, session: _Object<T>): T[keyof T] | undefined {
 				const property = p as keyof T
 				const propertyConfiguration = configuration[property]
 				const current = backend[property]
@@ -90,7 +90,7 @@ export namespace SessionlyObject {
 				}
 				return result
 			},
-			set(backend: T, p: string, value: T[keyof T], session: SessionlyObject<T>): boolean {
+			set(backend: T, p: string, value: T[keyof T], session: _Object<T>): boolean {
 				const property = p as keyof T
 				const propertyConfiguration = configuration[property]
 				if (!propertyConfiguration?.readonly && backend[property] !== value)
@@ -122,11 +122,11 @@ export namespace SessionlyObject {
 		})
 		return !factory ? result : { result, backend: () => backend, listeners }
 	}
-	export function is(value: unknown): value is SessionlyObject<globalThis.Record<string | number, unknown>> {
+	export function is(value: unknown): value is _Object<globalThis.Record<string | number, unknown>> {
 		return typeof value === "object" && !!value && symbol in value && value[symbol] === symbol
 	}
 	export function entries<T extends object>(
-		object: SessionlyObject<T> | T | undefined
+		object: _Object<T> | T | undefined
 	): [
 		Exclude<keyof T, keyof Listenable<ListenableParameters<T>> | keyof Symbol>,
 		T[Exclude<keyof T, keyof Listenable<ListenableParameters<T>> | keyof Symbol>]
@@ -134,12 +134,12 @@ export namespace SessionlyObject {
 		return object === undefined ? [] : (globalThis.Object.entries(object) as ReturnType<typeof entries>)
 	}
 	export function values<T extends object>(
-		object: SessionlyObject<T> | T | undefined
+		object: _Object<T> | T | undefined
 	): T[Exclude<keyof T, keyof Listenable<ListenableParameters<T>> | keyof Symbol>][] {
 		return object === undefined ? [] : (globalThis.Object.values(object) as ReturnType<typeof values>)
 	}
 	export function keys<T extends object>(
-		object: SessionlyObject<T> | T | undefined
+		object: _Object<T> | T | undefined
 	): Exclude<keyof T, keyof Listenable<ListenableParameters<T>> | keyof Symbol>[] {
 		return object === undefined ? [] : (globalThis.Object.keys(object) as ReturnType<typeof keys>)
 	}

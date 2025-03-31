@@ -27,12 +27,12 @@ export class RecordHandler<T> extends Base<SessionlyRecord<T>> {
 				const dependency = navigation.resolve(this.factory, backend, path)
 				if (dependency && (!target || target === dependency.target)) {
 					const memory = new Set<keyof T>()
-					this.state.listen(
+					this.session.listen(
 						"*",
 						(value, property) => {
 							if (!memory.has(property)) {
 								memory.add(property)
-								dependency.target.listen(dependency.key, () => delete this.state[property], { passive: true })
+								dependency.target.listen(dependency.key, () => delete this.session[property], { passive: true })
 							}
 						},
 						{ passive: true, trigger: "read" }
@@ -44,7 +44,7 @@ export class RecordHandler<T> extends Base<SessionlyRecord<T>> {
 				const dependency = navigation.resolve(this.factory, backend, path)
 				if (dependency && (!target || target === dependency.target)) {
 					const activated = new Set<keyof T>()
-					this.state.listen(
+					this.session.listen(
 						"*",
 						(_, property) => {
 							if (!activated.has(property)) {
@@ -64,15 +64,15 @@ export class RecordHandler<T> extends Base<SessionlyRecord<T>> {
 			let current = this.backend()[event as keyof T]
 			if (this.configuration) {
 				if (current === undefined)
-					current = this.state[event as keyof T] = this.configuration.initiate?.({
-						state: this.factory.state,
-						me: this.state,
+					current = this.session[event as keyof T] = this.configuration.initiate?.({
+						session: this.factory.session,
+						me: this.session,
 						property: event,
 						current,
 					})
 				this.configuration.load
-					?.force({ state: this.factory.state, me: this.state, property: event, current })
-					.then(result => (this.state[event as keyof T] = result))
+					?.force({ session: this.factory.session, me: this.session, property: event, current })
+					.then(result => (this.session[event as keyof T] = result))
 			}
 		}
 	}

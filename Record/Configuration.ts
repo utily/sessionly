@@ -1,28 +1,28 @@
 import { DotNotation } from "../DotNotation"
 import type { SessionlyRecord } from "./index"
 
-export type Configuration<T, TState = any> = {
+export type Configuration<T, TSession = any> = {
 	readonly?: true
 	initiate?: (parameters: {
-		state?: TState
+		session?: TSession
 		me: SessionlyRecord<T>
 		property: keyof T
 		current?: T[keyof T]
 	}) => T[keyof T] | undefined
 	load?: (parameters: {
-		state?: TState
+		session?: TSession
 		me: SessionlyRecord<T>
 		property: keyof T
 		current?: T[keyof T]
 	}) => Promise<T[keyof T] | undefined>
 	store?: (parameters: {
-		state?: TState
+		session?: TSession
 		me: SessionlyRecord<T>
 		property: keyof T
 		current?: T[keyof T]
 		value: T[keyof T] | undefined
 	}) => Promise<T[keyof T] | undefined>
-	invalidate?: DotNotation<TState>[]
-	reload?: DotNotation<TState>[]
+	invalidate?: DotNotation<TSession>[]
+	reload?: DotNotation<TSession>[]
 }
 export namespace Configuration {}

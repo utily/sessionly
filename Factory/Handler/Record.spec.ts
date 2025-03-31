@@ -3,7 +3,7 @@ import { sessionly } from "../../index"
 async function contextSwitch(): Promise<void> {
 	return await new Promise(resolve => setTimeout(resolve, 0))
 }
-interface State {
+interface Session {
 	sum?: number
 	numbers: sessionly.Record<Numbers>
 	double: sessionly.Record<Numbers>
@@ -11,16 +11,16 @@ interface State {
 }
 type Numbers = Record<string, number>
 
-function create(blocking: boolean): sessionly.Object<State> {
-	const factory = sessionly.Factory.create<sessionly.Object<State>>()
-	const state = factory.create<State>(
+function create(blocking: boolean): sessionly.Object<Session> {
+	const factory = sessionly.Factory.create<sessionly.Object<Session>>()
+	const session = factory.create<Session>(
 		"object",
 		{
 			sum: {
-				load: async ({ state }) => {
+				load: async ({ session }) => {
 					if (blocking)
 						await contextSwitch()
-					return sessionly.Record.values(state?.numbers).reduce<number>((result, number) => result + number, 0)
+					return sessionly.Record.values(session?.numbers).reduce<number>((result, number) => result + number, 0)
 				},
 				reload: ["numbers.*"],
 			},
@@ -30,10 +30,10 @@ function create(blocking: boolean): sessionly.Object<State> {
 			double: factory.create<Numbers>(
 				"record",
 				{
-					load: async ({ state, property }) => {
+					load: async ({ session, property }) => {
 						if (blocking)
 							await contextSwitch()
-						const value = state?.numbers?.[property[0]]
+						const value = session?.numbers?.[property[0]!]
 						return value == undefined ? undefined : value * 2
 					},
 					reload: ["numbers.*"],
@@ -43,10 +43,10 @@ function create(blocking: boolean): sessionly.Object<State> {
 			half: factory.create<Numbers>(
 				"record",
 				{
-					load: async ({ state, property }) => {
+					load: async ({ session, property }) => {
 						if (blocking)
 							await contextSwitch()
-						const value = state?.numbers?.[property[0]]
+						const value = session?.numbers?.[property[0]!]
 						return value == undefined ? undefined : value / 2
 					},
 					invalidate: ["numbers.*"],
@@ -68,107 +68,107 @@ function create(blocking: boolean): sessionly.Object<State> {
 			),
 		}
 	)
-	return factory.start(state)
+	return factory.start(session)
 }
 
 describe("Factory.handler.Record", () => {
 	it("reload", async () => {
-		const state = create(true)
-		expect(state.numbers.a).toEqual(undefined)
-		expect(state.numbers.b).toEqual(undefined)
-		expect(state.numbers.c).toEqual(undefined)
-		expect(state.double.c).toEqual(undefined)
-		expect(state.sum).toEqual(undefined)
+		const session = create(true)
+		expect(session.numbers.a).toEqual(undefined)
+		expect(session.numbers.b).toEqual(undefined)
+		expect(session.numbers.c).toEqual(undefined)
+		expect(session.double.c).toEqual(undefined)
+		expect(session.sum).toEqual(undefined)
 		await contextSwitch()
-		expect(state.numbers.a).toEqual(0)
-		expect(state.numbers.b).toEqual(1)
-		expect(state.numbers.c).toEqual(2)
-		expect(state.double.c).toEqual(undefined)
-		expect(state.sum).toEqual(undefined)
+		expect(session.numbers.a).toEqual(0)
+		expect(session.numbers.b).toEqual(1)
+		expect(session.numbers.c).toEqual(2)
+		expect(session.double.c).toEqual(undefined)
+		expect(session.sum).toEqual(undefined)
 		await contextSwitch()
-		expect(state.sum).toEqual(3)
-		state.numbers.c = 6
-		expect(state.numbers.a).toEqual(0)
-		expect(state.numbers.b).toEqual(1)
-		expect(state.numbers.c).toEqual(2)
-		expect(state.double.c).toEqual(4)
-		expect(state.sum).toEqual(3)
+		expect(session.sum).toEqual(3)
+		session.numbers.c = 6
+		expect(session.numbers.a).toEqual(0)
+		expect(session.numbers.b).toEqual(1)
+		expect(session.numbers.c).toEqual(2)
+		expect(session.double.c).toEqual(4)
+		expect(session.sum).toEqual(3)
 		await contextSwitch()
-		expect(state.numbers.a).toEqual(0)
-		expect(state.numbers.b).toEqual(1)
-		expect(state.numbers.c).toEqual(6)
-		expect(state.double.c).toEqual(4)
-		expect(state.sum).toEqual(3)
+		expect(session.numbers.a).toEqual(0)
+		expect(session.numbers.b).toEqual(1)
+		expect(session.numbers.c).toEqual(6)
+		expect(session.double.c).toEqual(4)
+		expect(session.sum).toEqual(3)
 		await contextSwitch()
-		expect(state.sum).toEqual(7)
-		expect(state.double.c).toEqual(12)
+		expect(session.sum).toEqual(7)
+		expect(session.double.c).toEqual(12)
 	})
 	it("reload + invalidate", async () => {
-		const state = create(false)
-		expect(state.numbers.b).toEqual(undefined)
-		expect(state.numbers.c).toEqual(undefined)
-		expect(state.double.cd).toEqual(undefined)
-		expect(state.half.ch).toEqual(undefined)
-		expect(state.sum).toEqual(undefined)
+		const session = create(false)
+		expect(session.numbers.b).toEqual(undefined)
+		expect(session.numbers.c).toEqual(undefined)
+		expect(session.double.cd).toEqual(undefined)
+		expect(session.half.ch).toEqual(undefined)
+		expect(session.sum).toEqual(undefined)
 		await contextSwitch()
-		expect(state.numbers.b).toEqual(1)
-		expect(state.numbers.c).toEqual(2)
-		expect(state.double.cd).toEqual(4)
-		expect(state.half.ch).toEqual(1)
-		expect(state.sum).toEqual(3)
+		expect(session.numbers.b).toEqual(1)
+		expect(session.numbers.c).toEqual(2)
+		expect(session.double.cd).toEqual(4)
+		expect(session.half.ch).toEqual(1)
+		expect(session.sum).toEqual(3)
 		await contextSwitch()
-		expect(state.double.cd).toEqual(4)
-		expect(state.half.ch).toEqual(1)
-		expect(state.sum).toEqual(3)
+		expect(session.double.cd).toEqual(4)
+		expect(session.half.ch).toEqual(1)
+		expect(session.sum).toEqual(3)
 		await contextSwitch()
-		delete state.numbers.c
-		expect(state.numbers.c).toEqual(undefined)
-		expect(state.double.cd).toEqual(4)
-		expect(state.half.ch).toEqual(undefined)
-		expect(state.sum).toEqual(3)
+		delete session.numbers.c
+		expect(session.numbers.c).toEqual(undefined)
+		expect(session.double.cd).toEqual(4)
+		expect(session.half.ch).toEqual(undefined)
+		expect(session.sum).toEqual(3)
 		await contextSwitch()
-		expect(state.numbers.c).toEqual(2)
-		expect(state.double.cd).toEqual(4)
-		expect(state.half.ch).toEqual(1)
-		expect(state.sum).toEqual(3)
+		expect(session.numbers.c).toEqual(2)
+		expect(session.double.cd).toEqual(4)
+		expect(session.half.ch).toEqual(1)
+		expect(session.sum).toEqual(3)
 		await contextSwitch()
-		expect(state.numbers.c).toEqual(2)
-		expect(state.double.cd).toEqual(4)
-		expect(state.half.ch).toEqual(1)
-		expect(state.sum).toEqual(3)
+		expect(session.numbers.c).toEqual(2)
+		expect(session.double.cd).toEqual(4)
+		expect(session.half.ch).toEqual(1)
+		expect(session.sum).toEqual(3)
 	})
 	it("blocking reload + invalidate", async () => {
-		const state = create(true)
-		expect(state.numbers.b).toEqual(undefined)
-		expect(state.numbers.c).toEqual(undefined)
-		expect(state.double.cd).toEqual(undefined)
-		expect(state.half.ch).toEqual(undefined)
-		expect(state.sum).toEqual(undefined)
+		const session = create(true)
+		expect(session.numbers.b).toEqual(undefined)
+		expect(session.numbers.c).toEqual(undefined)
+		expect(session.double.cd).toEqual(undefined)
+		expect(session.half.ch).toEqual(undefined)
+		expect(session.sum).toEqual(undefined)
 		await contextSwitch()
-		expect(state.numbers.b).toEqual(1)
-		expect(state.numbers.c).toEqual(2)
-		expect(state.double.cd).toEqual(undefined)
-		expect(state.half.ch).toEqual(undefined)
-		expect(state.sum).toEqual(undefined)
+		expect(session.numbers.b).toEqual(1)
+		expect(session.numbers.c).toEqual(2)
+		expect(session.double.cd).toEqual(undefined)
+		expect(session.half.ch).toEqual(undefined)
+		expect(session.sum).toEqual(undefined)
 		await contextSwitch()
-		expect(state.double.cd).toEqual(4)
-		expect(state.half.ch).toEqual(1)
-		expect(state.sum).toEqual(3)
+		expect(session.double.cd).toEqual(4)
+		expect(session.half.ch).toEqual(1)
+		expect(session.sum).toEqual(3)
 		await contextSwitch()
-		delete state.numbers.c
-		expect(state.numbers.c).toEqual(undefined)
-		expect(state.double.cd).toEqual(4)
-		expect(state.half.ch).toEqual(undefined)
-		expect(state.sum).toEqual(3)
+		delete session.numbers.c
+		expect(session.numbers.c).toEqual(undefined)
+		expect(session.double.cd).toEqual(4)
+		expect(session.half.ch).toEqual(undefined)
+		expect(session.sum).toEqual(3)
 		await contextSwitch()
-		expect(state.numbers.c).toEqual(2)
-		expect(state.double.cd).toEqual(4)
-		expect(state.half.ch).toEqual(undefined)
-		expect(state.sum).toEqual(3)
+		expect(session.numbers.c).toEqual(2)
+		expect(session.double.cd).toEqual(4)
+		expect(session.half.ch).toEqual(undefined)
+		expect(session.sum).toEqual(3)
 		await contextSwitch()
-		expect(state.numbers.c).toEqual(2)
-		expect(state.double.cd).toEqual(4)
-		expect(state.half.ch).toEqual(1)
-		expect(state.sum).toEqual(3)
+		expect(session.numbers.c).toEqual(2)
+		expect(session.double.cd).toEqual(4)
+		expect(session.half.ch).toEqual(1)
+		expect(session.sum).toEqual(3)
 	})
 })

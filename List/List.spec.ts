@@ -3,7 +3,7 @@ import { sessionly } from "../index"
 async function contextSwitch(): Promise<void> {
 	return await new Promise(resolve => setTimeout(resolve, 0))
 }
-interface State {
+interface Session {
 	sum?: number
 	numbers: sessionly.List<number>
 	double: sessionly.List<number>
@@ -11,20 +11,20 @@ interface State {
 
 describe("List", () => {
 	it("configuration", async () => {
-		type StateConfiguration = sessionly.Object.Configuration<State, sessionly.Object<State>>
-		type NumbersConfiguration = sessionly.List.Configuration<number, sessionly.Object<State>>
+		type SessionConfiguration = sessionly.Object.Configuration<Session, sessionly.Object<Session>>
+		type NumbersConfiguration = sessionly.List.Configuration<number, sessionly.Object<Session>>
 		const numbers: NumbersConfiguration = {
 			load: async ({ current }) => {
 				return current ?? []
 			},
 		}
 		const double: NumbersConfiguration = {
-			load: async ({ state }) => {
-				return state?.numbers.reduce<number[]>((result, number) => result.concat(number, number), [])
+			load: async ({ session }) => {
+				return session?.numbers.reduce<number[]>((result, number) => result.concat(number, number), [])
 			},
 			reload: ["numbers.change"],
 		}
-		const state: StateConfiguration = {
+		const session: SessionConfiguration = {
 			sum: {
 				load: async ({ me }) => {
 					return me.double.reduce(
@@ -37,15 +37,15 @@ describe("List", () => {
 		}
 		expect(numbers).toBeTruthy()
 		expect(double).toBeTruthy()
-		expect(state).toBeTruthy()
+		expect(session).toBeTruthy()
 	})
 	it("create + is", () => {
-		const state = sessionly.List.create<number>({}, [0, 1, 2])
-		expect(sessionly.List.is(state)).toEqual(true)
+		const session = sessionly.List.create<number>({}, [0, 1, 2])
+		expect(sessionly.List.is(session)).toEqual(true)
 		expect(sessionly.List.is([0, 1, 2])).toEqual(false)
 	})
 	it("load", async () => {
-		const states = {
+		const sessions = {
 			loaded: sessionly.List.create<number>(
 				{
 					load: async ({ current }) => {
@@ -66,18 +66,18 @@ describe("List", () => {
 				undefined
 			),
 		}
-		expect(states.loaded.toArray()).toEqual([0, 1, 2])
-		expect(states.loaded.toArray()).toEqual([0, 1, 2])
+		expect(sessions.loaded.toArray()).toEqual([0, 1, 2])
+		expect(sessions.loaded.toArray()).toEqual([0, 1, 2])
 		await contextSwitch()
-		expect(states.loaded.toArray()).toEqual([0, 1, 2])
+		expect(sessions.loaded.toArray()).toEqual([0, 1, 2])
 
-		expect(states.unloaded.toArray()).toEqual([])
-		expect(states.unloaded.toArray()).toEqual([])
+		expect(sessions.unloaded.toArray()).toEqual([])
+		expect(sessions.unloaded.toArray()).toEqual([])
 		await contextSwitch()
-		expect(states.unloaded.toArray()).toEqual([0, 1, 2])
+		expect(sessions.unloaded.toArray()).toEqual([0, 1, 2])
 	})
 	it("initiate", async () => {
-		const states = {
+		const sessions = {
 			initiated: sessionly.List.create<number>(
 				{
 					initiate: () => {
@@ -91,13 +91,13 @@ describe("List", () => {
 				undefined
 			),
 		}
-		expect(states.initiated.toArray()).toEqual([0])
-		expect(states.initiated.toArray()).toEqual([0])
+		expect(sessions.initiated.toArray()).toEqual([0])
+		expect(sessions.initiated.toArray()).toEqual([0])
 		await contextSwitch()
-		expect(states.initiated.toArray()).toEqual([1])
+		expect(sessions.initiated.toArray()).toEqual([1])
 	})
 	it("change", async () => {
-		const state = sessionly.List.create<number>(
+		const session = sessionly.List.create<number>(
 			{
 				change: async ({ value }) => {
 					await contextSwitch()
@@ -106,12 +106,12 @@ describe("List", () => {
 			},
 			[]
 		)
-		expect(state.toArray()).toEqual([])
-		state.change([0, 1, 2])
-		expect(state.toArray()).toEqual([])
+		expect(session.toArray()).toEqual([])
+		session.change([0, 1, 2])
+		expect(session.toArray()).toEqual([])
 		await contextSwitch()
 		await contextSwitch()
-		expect(state.toArray()).toEqual([0, 1, 2])
+		expect(session.toArray()).toEqual([0, 1, 2])
 	})
 	it("listen", async () => {
 		const factory = () =>
@@ -124,7 +124,7 @@ describe("List", () => {
 				},
 				undefined
 			)
-		const states = {
+		const sessions = {
 			passive: { read: factory(), write: factory() },
 			active: { read: factory(), write: factory() },
 		}
@@ -132,10 +132,10 @@ describe("List", () => {
 			active: { read: [], write: [] },
 			passive: { read: [], write: [] },
 		}
-		states.passive.read.listen("read", value => values.passive.read.push(value.length), { passive: true })
-		states.passive.write.listen("change", value => values.passive.write.push(value.length), { passive: true })
-		states.active.read.listen("read", value => values.active.read.push(value.length))
-		states.active.write.listen("change", value => values.active.write.push(value.length))
+		sessions.passive.read.listen("read", value => values.passive.read.push(value.length), { passive: true })
+		sessions.passive.write.listen("change", value => values.passive.write.push(value.length), { passive: true })
+		sessions.active.read.listen("read", value => values.active.read.push(value.length))
+		sessions.active.write.listen("change", value => values.active.write.push(value.length))
 
 		expect(values.passive.read).toEqual([])
 		expect(values.passive.read.length).toEqual(0)
@@ -155,10 +155,10 @@ describe("List", () => {
 		expect(values.active.write).toEqual([0, 1])
 		expect(values.active.write.length).toEqual(2)
 
-		expect(states.passive.read.toArray()).toEqual([])
-		expect(states.passive.write.toArray()).toEqual([])
-		expect(states.active.read.toArray()).toEqual([1])
-		expect(states.active.write.toArray()).toEqual([1])
+		expect(sessions.passive.read.toArray()).toEqual([])
+		expect(sessions.passive.write.toArray()).toEqual([])
+		expect(sessions.active.read.toArray()).toEqual([1])
+		expect(sessions.active.write.toArray()).toEqual([1])
 		await contextSwitch()
 		expect(values.passive.read).toEqual([0])
 		expect(values.passive.read.length).toEqual(1)
@@ -169,10 +169,10 @@ describe("List", () => {
 		expect(values.active.write).toEqual([0, 1])
 		expect(values.active.write.length).toEqual(2)
 
-		expect(states.passive.read.toArray()).toEqual([1])
-		expect(states.passive.write.toArray()).toEqual([1])
-		expect(states.active.read.toArray()).toEqual([1])
-		expect(states.active.write.toArray()).toEqual([1])
+		expect(sessions.passive.read.toArray()).toEqual([1])
+		expect(sessions.passive.write.toArray()).toEqual([1])
+		expect(sessions.active.read.toArray()).toEqual([1])
+		expect(sessions.active.write.toArray()).toEqual([1])
 		await contextSwitch()
 		expect(values.passive.read).toEqual([0, 1])
 		expect(values.passive.read.length).toEqual(2)

@@ -67,7 +67,7 @@ export namespace SessionlyObject {
 			},
 		}) as SessionlyObject<T>
 		const result = new Proxy<SessionlyObject<T>>(backend, {
-			get(backend: T, p: string, state: SessionlyObject<T>): T[keyof T] | undefined {
+			get(backend: T, p: string, session: SessionlyObject<T>): T[keyof T] | undefined {
 				const property = p as keyof T
 				const propertyConfiguration = configuration[property]
 				const current = backend[property]
@@ -76,26 +76,28 @@ export namespace SessionlyObject {
 					result = backend[property]
 				else if (!(property in promise)) {
 					if (current === undefined) {
-						result = propertyConfiguration?.initiate?.({ state: factory?.state, me: state, property, current })
+						result = propertyConfiguration?.initiate?.({ session: factory?.session, me: session, property, current })
 						if (result !== backend[property])
-							state[property] = result as any
-						propertyConfiguration?.load?.({ state: factory?.state, me: state, property, current }).then(result => {
-							if (result !== backend[property])
-								state[property] = result as any
-						})
+							session[property] = result as any
+						propertyConfiguration
+							?.load?.({ session: factory?.session, me: session, property, current })
+							.then(result => {
+								if (result !== backend[property])
+									session[property] = result as any
+							})
 					}
 					listeners.call(property, "read", backend[property], property)
 				}
 				return result
 			},
-			set(backend: T, p: string, value: T[keyof T], state: SessionlyObject<T>): boolean {
+			set(backend: T, p: string, value: T[keyof T], session: SessionlyObject<T>): boolean {
 				const property = p as keyof T
 				const propertyConfiguration = configuration[property]
 				if (!propertyConfiguration?.readonly && backend[property] !== value)
 					(
 						propertyConfiguration?.store?.({
-							state: factory?.state,
-							me: state,
+							session: factory?.session,
+							me: session,
 							property,
 							current: backend[property],
 							value,

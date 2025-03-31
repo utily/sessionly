@@ -74,7 +74,7 @@ export namespace SessionlyRecord {
 			},
 		}) as SessionlyRecord<T>
 		const result = new Proxy<SessionlyRecord<T>>(backend, {
-			get(backend: T, p: keyof any, state: SessionlyRecord<T>): T[keyof T] | undefined {
+			get(backend: T, p: keyof any, session: SessionlyRecord<T>): T[keyof T] | undefined {
 				const property = p as T[keyof T]
 				const current = backend[property]
 				let result: T[keyof T] | undefined = current
@@ -84,12 +84,12 @@ export namespace SessionlyRecord {
 					result = backend[property]
 				else {
 					if (current === undefined) {
-						result = configuration.initiate?.({ state: factory?.state, me: state, property, current })
+						result = configuration.initiate?.({ session: factory?.session, me: session, property, current })
 						if (result !== backend[property])
-							state[property] = result as any
-						configuration.load?.({ state: factory?.state, me: state, property, current }).then(result => {
+							session[property] = result as any
+						configuration.load?.({ session: factory?.session, me: session, property, current }).then(result => {
 							if (result !== backend[property])
-								state[property] = result as any
+								session[property] = result as any
 						})
 					}
 					listeners.call(property, "read", ...([backend[property], property] as any))
@@ -97,14 +97,19 @@ export namespace SessionlyRecord {
 				}
 				return result
 			},
-			set(backend: T, p: keyof any, value: T[keyof T], state: SessionlyRecord<T>): boolean {
+			set(backend: T, p: keyof any, value: T[keyof T], session: SessionlyRecord<T>): boolean {
 				const property = p as T[keyof T]
 				if (property === "*")
 					return false
 				else if (!configuration.readonly && backend[property] !== value)
 					(
-						configuration.store?.({ state: factory?.state, me: state, property, current: backend[property], value }) ??
-						Promise.resolve(value)
+						configuration.store?.({
+							session: factory?.session,
+							me: session,
+							property,
+							current: backend[property],
+							value,
+						}) ?? Promise.resolve(value)
 					).then(result => {
 						if (result !== backend[property]) {
 							backend[property] = result as any

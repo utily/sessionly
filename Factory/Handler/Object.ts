@@ -22,10 +22,10 @@ export class ObjectHandler<T> extends Base<SessionlyObject<T>> {
 				if (typeof path === "string") {
 					const dependency = navigation.resolve(this.factory, backend, path)
 					if (dependency && (!target || target === dependency.target))
-						this.state.listen<keyof T>(
+						this.session.listen<keyof T>(
 							property as keyof T,
 							() =>
-								dependency.target.listen(dependency.key, () => delete this.state[property as keyof T], {
+								dependency.target.listen(dependency.key, () => delete this.session[property as keyof T], {
 									passive: true,
 								}),
 							{ passive: true, once: true, trigger: "read" }
@@ -35,7 +35,7 @@ export class ObjectHandler<T> extends Base<SessionlyObject<T>> {
 				if (typeof path === "string") {
 					const dependency = navigation.resolve(this.factory, backend, path)
 					if (dependency && (!target || target === dependency.target)) {
-						this.state.listen<keyof T>(
+						this.session.listen<keyof T>(
 							property as keyof T,
 							() => dependency.target.listen(dependency.key, () => this.reload(property as string), { passive: true }),
 							{ passive: true, once: true, trigger: "read" }
@@ -50,15 +50,15 @@ export class ObjectHandler<T> extends Base<SessionlyObject<T>> {
 		const configuration = this.configuration[event]
 		if (configuration) {
 			if (current === undefined)
-				this.state[event as keyof T] = configuration.initiate?.({
-					state: this.factory.state,
-					me: this.state,
+				this.session[event as keyof T] = configuration.initiate?.({
+					session: this.factory.session,
+					me: this.session,
 					property: event as never,
 					current,
 				})
 			configuration.load
-				?.force({ state: this.factory.state, me: this.state, property: event as never, current })
-				.then(result => (this.state[event as keyof T] = result))
+				?.force({ session: this.factory.session, me: this.session, property: event as never, current })
+				.then(result => (this.session[event as keyof T] = result))
 		}
 	}
 	private static processConfiguration<T>(
@@ -85,7 +85,7 @@ export class ObjectHandler<T> extends Base<SessionlyObject<T>> {
 export namespace ObjectHandler {
 	export type Configuration<
 		TConfiguration extends SessionlyObject.Configuration<unknown>,
-		TState = unknown
+		TSession = unknown
 	> = TConfiguration extends SessionlyObject.Configuration<infer T>
 		? {
 				[Property in keyof TConfiguration]?: Property extends keyof T
@@ -94,12 +94,12 @@ export namespace ObjectHandler {
 								T,
 								Property,
 								T[Property],
-								TState
+								TSession
 							>]?: Configuration extends "load"
 								? typedly.Promise.Lazy<
-										Required<SessionlyObject.Configuration.Property<T, Property, T[Property], TState>>["load"]
+										Required<SessionlyObject.Configuration.Property<T, Property, T[Property], TSession>>["load"]
 								  >
-								: SessionlyObject.Configuration.Property<T, Property, T[Property], TState>[Configuration]
+								: SessionlyObject.Configuration.Property<T, Property, T[Property], TSession>[Configuration]
 					  }
 					: never
 		  }

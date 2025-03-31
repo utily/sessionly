@@ -24,11 +24,11 @@ export class ListHandler<T> extends Base<SessionlyList<T>> {
 					const callback = () => {
 						controllers.read.abort()
 						controllers.change.abort()
-						dependency.target.listen(dependency.key, () => this.state.invalidate(), { passive: true })
+						dependency.target.listen(dependency.key, () => this.session.invalidate(), { passive: true })
 					}
 					const controllers = {
-						read: this.state.listen("read", callback, { once: true, passive: true }),
-						change: this.state.listen("change", callback, { once: true, passive: true }),
+						read: this.session.listen("read", callback, { once: true, passive: true }),
+						change: this.session.listen("change", callback, { once: true, passive: true }),
 					}
 				}
 			}
@@ -42,8 +42,8 @@ export class ListHandler<T> extends Base<SessionlyList<T>> {
 						dependency.target.listen(dependency.key, () => this.reload(), { passive: true })
 					}
 					const controllers = {
-						change: this.state.listen("change", callback, { once: true, passive: true }),
-						read: this.state.listen("read", callback, { once: true, passive: true }),
+						change: this.session.listen("change", callback, { once: true, passive: true }),
+						read: this.session.listen("read", callback, { once: true, passive: true }),
 					}
 				}
 			}
@@ -54,10 +54,10 @@ export class ListHandler<T> extends Base<SessionlyList<T>> {
 		const configuration = this.configuration
 		if (configuration) {
 			if (current === undefined)
-				this.state.change(configuration.initiate?.({ state: this.factory.state, me: this.state, current }))
+				this.session.change(configuration.initiate?.({ session: this.factory.session, me: this.session, current }))
 			configuration
-				.load?.({ state: this.factory.state, me: this.state, current })
-				.then(result => this.state.change(result))
+				.load?.({ session: this.factory.session, me: this.session, current })
+				.then(result => this.session.change(result))
 		}
 	}
 	private static processConfiguration<T>(

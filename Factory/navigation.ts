@@ -3,16 +3,16 @@ import { Listenable } from "../Listenable"
 import type { Factory } from "./index"
 
 export namespace navigation {
-	export function path(state: Listenable<any>, listenable: unknown): Listenable<any>[] {
+	export function path(session: Listenable<any>, listenable: unknown): Listenable<any>[] {
 		let result: Listenable<any>[] = []
-		if (state == listenable)
+		if (session == listenable)
 			result = Listenable.is(listenable) ? [listenable] : []
 		else
-			for (const value of typedly.Object.values(state))
+			for (const value of typedly.Object.values(session))
 				if (Listenable.is(value)) {
 					const nodes = path(value, listenable)
 					if (nodes.length) {
-						result = [state, ...nodes]
+						result = [session, ...nodes]
 						break
 					}
 				}
@@ -25,10 +25,10 @@ export namespace navigation {
 	): { target: Listenable<any>; key: string } | undefined {
 		let segments = path.split(/(?<!\\)\./).map(segment => segment.replaceAll(/\\./g, "."))
 		if (segments.length <= 1 || segments[0] != "") {
-			target = factory.state ?? target
+			target = factory.session ?? target
 		} else {
 			segments = segments.slice(1)
-			const nodes = navigation.path(factory.state ?? target, target)
+			const nodes = navigation.path(factory.session ?? target, target)
 			while (segments.length > 1 && segments[0] == "") {
 				segments.shift()
 				nodes.pop()
@@ -38,9 +38,9 @@ export namespace navigation {
 				target = result
 		}
 		let result: { target: Listenable<any>; key: string } | undefined
-		for (let next: unknown = target; segments.length; next = (next as any)[segments.shift() ?? segments[0]])
+		for (let next: unknown = target; segments.length; next = (next as any)[segments.shift() ?? segments[0]!])
 			if (segments.length == 1) {
-				result = !Listenable.is(next) ? undefined : { target: next, key: segments[0] }
+				result = !Listenable.is(next) ? undefined : { target: next, key: segments[0]! }
 				break
 			}
 		return result

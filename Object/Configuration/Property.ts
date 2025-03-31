@@ -1,29 +1,29 @@
 import { DotNotation } from "../../DotNotation"
 import type { SessionlyObject } from "../index"
 
-export interface Property<T, TProperty extends keyof T, TValue extends T[TProperty] = T[TProperty], TState = any> {
+export interface Property<T, TProperty extends keyof T, TValue extends T[TProperty] = T[TProperty], TSession = any> {
 	readonly?: true
 	initiate?: (parameters: {
-		state?: unknown
+		session?: unknown
 		me: SessionlyObject<T>
 		property: TProperty
 		current?: TValue
 	}) => TValue | undefined
 	load?: (parameters: {
-		state?: TState
+		session?: TSession
 		me: SessionlyObject<T>
 		property: TProperty
 		current?: TValue
 	}) => Promise<TValue | undefined>
 	store?: (parameters: {
-		state?: TState
+		session?: TSession
 		me: SessionlyObject<T>
 		property: TProperty
 		current?: TValue
 		value: TValue | undefined
 	}) => Promise<TValue | undefined>
-	invalidate?: DotNotation<TState>[]
-	reload?: DotNotation<TState>[]
+	invalidate?: DotNotation<TSession>[]
+	reload?: DotNotation<TSession>[]
 }
 
 export namespace Property {}

@@ -23,12 +23,12 @@ export class List<T> extends typedly.Collection<T> implements Listenable<List.Li
 		const current = this.#backend
 		let result = current
 		if (current === undefined) {
-			result = this.configuration.initiate?.({ state: this.factory?.state, me: this, current })
+			result = this.configuration.initiate?.({ session: this.factory?.session, me: this, current })
 			if (result !== this.#backend) {
 				this.backend = result
 				this.listeners.call("change", "write", result ?? [], "change")
 			}
-			this.configuration.load?.({ state: this.factory?.state, me: this, current }).then(result => {
+			this.configuration.load?.({ session: this.factory?.session, me: this, current }).then(result => {
 				if (result !== this.#backend) {
 					this.backend = result
 					this.listeners.call("change", "write", result ?? [], "change")
@@ -57,7 +57,7 @@ export class List<T> extends typedly.Collection<T> implements Listenable<List.Li
 	async change(source: http.Continuable<T> | undefined): Promise<http.Continuable<T> | undefined> {
 		const current = this.backend
 		return (
-			this.configuration.change?.({ state: this.factory?.state, me: this, current, value: source }) ??
+			this.configuration.change?.({ session: this.factory?.session, me: this, current, value: source }) ??
 			Promise.resolve(source)
 		).then(async result => {
 			if (result) {
@@ -71,7 +71,7 @@ export class List<T> extends typedly.Collection<T> implements Listenable<List.Li
 	async push(item: T): Promise<T | undefined> {
 		const current = this.backend
 		return (
-			this.configuration.push?.({ state: this.factory?.state, me: this, current: current, value: item }) ??
+			this.configuration.push?.({ session: this.factory?.session, me: this, current: current, value: item }) ??
 			Promise.resolve(item)
 		).then(async result => {
 			if (result) {
@@ -88,7 +88,7 @@ export class List<T> extends typedly.Collection<T> implements Listenable<List.Li
 	async replace(index: number, item: T): Promise<T | undefined> {
 		const current = this.backend
 		return (
-			this.configuration.replace?.({ state: this.factory?.state, me: this, current, value: item, index }) ??
+			this.configuration.replace?.({ session: this.factory?.session, me: this, current, value: item, index }) ??
 			Promise.resolve({ value: item, index })
 		)?.then(async result => {
 			if (result) {
@@ -105,7 +105,7 @@ export class List<T> extends typedly.Collection<T> implements Listenable<List.Li
 		const current = this.backend
 		return (
 			this.configuration
-				.remove?.({ state: this.factory?.state, me: this, current, index })
+				.remove?.({ session: this.factory?.session, me: this, current, index })
 				.then(result => (result ? result : { index: undefined })) ?? Promise.resolve({ index })
 		).then(async ({ index }) => {
 			let result: T | undefined = undefined
@@ -124,7 +124,7 @@ export class List<T> extends typedly.Collection<T> implements Listenable<List.Li
 	}
 	async next(): Promise<http.Continuable<T> | undefined> {
 		return await this.configuration
-			.next?.({ state: this.factory?.state, me: this, current: this.backend })
+			.next?.({ session: this.factory?.session, me: this, current: this.backend })
 			.then(result => {
 				if (result) {
 					this.#continuable = !!result.cursor

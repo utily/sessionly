@@ -2,7 +2,7 @@ import { gracely } from "gracely"
 import { List } from "./List"
 import { SessionlyObject } from "./Object"
 
-export class Errors {
+export interface Errors {
 	stack: List<gracely.Error>
 	handle: <T>(response: T | gracely.Error) => T | false
 }

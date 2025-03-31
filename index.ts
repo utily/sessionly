@@ -4,7 +4,7 @@ import { List as sessionlyList } from "./List"
 import { Listenable as sessionlyListenable } from "./Listenable"
 import { Loadable as sessionlyLoadable } from "./Loadable"
 import { _Object as sessionlyObject } from "./Object"
-import { _Record as sessionlyRecord } from "./Record"
+import { Record as sessionlyRecord } from "./Record"
 
 export namespace sessionly {
 	export import Errors = sessionlyErrors

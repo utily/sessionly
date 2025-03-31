@@ -17,9 +17,13 @@ export namespace Listenable {
 	export import Controller = ListenableController
 	export import Listeners = ListenableListeners
 	export import Options = ListenableOptions
-	export const type = isly.object<Listenable<object>>({
-		listen: isly.function(),
-		unlisten: isly.function(),
-	})
-	export const is = type.is
+	export const { type, is, flawed } = isly
+		.object<Listenable<object>>(
+			{
+				listen: isly.function(),
+				unlisten: isly.function(),
+			},
+			"isly.Listenable"
+		)
+		.bind()
 }

@@ -50,6 +50,7 @@
 		"langly",
 		"paramly",
 		"persistly",
+		"prettierx",
 		"selectivly",
 		"servly",
 		"servly-azure",
@@ -58,7 +59,9 @@
 		"tidily",
 		"transactly",
 		"typedly",
-		"uply"
+		"unlisten",
+		"uply",
+		"Utily"
 	],
 	"typescript.tsdk": "node_modules/typescript/lib"
 }

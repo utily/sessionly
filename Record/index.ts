@@ -1,13 +1,13 @@
 import type { Factory } from "../Factory"
 import { Listenable } from "../Listenable"
-import { Configuration as RecordConfiguration } from "./Configuration"
+import { Configuration as _Configuration } from "./Configuration"
 
 const promise = new Promise(resolve => resolve(true))
 export type Record<T> = T & Listenable<Required<Record.ListenableParameters<T>>> & Record.Symbol
 export namespace Record {
 	const symbol: unique symbol = Symbol("Record")
 	export type Symbol = globalThis.Record<typeof symbol, typeof symbol>
-	export import Configuration = RecordConfiguration
+	export import Configuration = _Configuration
 	export type ListenableParameters<T> = {
 		[Property in keyof T | "*"]: Property extends keyof T
 			? [value: T[Property], event: Property]

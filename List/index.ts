@@ -2,7 +2,7 @@ import { http } from "cloudly-http"
 import { typedly } from "typedly"
 import { Factory } from "../Factory"
 import { Listenable } from "../Listenable"
-import { Configuration as ListConfiguration } from "./Configuration"
+import { Configuration as _Configuration } from "./Configuration"
 import { Events as ListEvents } from "./Events"
 
 const symbol: unique symbol = Symbol("List")
@@ -185,7 +185,7 @@ export class List<T> extends typedly.Collection<T> implements Listenable<List.Li
 	}
 }
 export namespace List {
-	export import Configuration = ListConfiguration
+	export import Configuration = _Configuration
 	export import Events = ListEvents
 	export type Symbol = Record<typeof symbol, typeof symbol>
 	export type ListenableParameters<T> = Events<T>

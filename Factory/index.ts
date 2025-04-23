@@ -1,7 +1,7 @@
 import { typedly } from "typedly"
 import { List } from "../List"
 import { Listenable } from "../Listenable"
-import { _Object } from "../Object"
+import { Object } from "../Object"
 import { Record } from "../Record"
 import { Handler } from "./Handler"
 
@@ -18,24 +18,24 @@ export class Factory<
 		return this.#session !== undefined
 	}
 	private readonly handlers = globalThis.Object.assign(
-		new typedly.IterableWeakMap<_Object<any> | Record<any> | List<any>, Handler>(),
+		new typedly.IterableWeakMap<Object<any> | Record<any> | List<any>, Handler>(),
 		{
-			created: new typedly.IterableWeakMap<_Object<any> | Record<any> | List<any>, Handler>(),
-			started: new typedly.IterableWeakMap<_Object<any> | Record<any> | List<any>, Handler>(),
+			created: new typedly.IterableWeakMap<Object<any> | Record<any> | List<any>, Handler>(),
+			started: new typedly.IterableWeakMap<Object<any> | Record<any> | List<any>, Handler>(),
 		}
 	)
 
 	private constructor() {}
 
 	create<T>(type: "list", configuration: List.Configuration<T, TSession>, initial: T[] | undefined): List<T>
-	create<T>(type: "object", configuration: _Object.Configuration<T, TSession>, initial: T): _Object<T>
+	create<T>(type: "object", configuration: Object.Configuration<T, TSession>, initial: T): Object<T>
 	create<T>(type: "record", configuration: Record.Configuration<T, TSession>, initial: T): Record<T>
 	create<T>(
 		...argument:
 			| ["list", List.Configuration<T, TSession>, T[] | undefined]
-			| ["object", _Object.Configuration<T, TSession>, T]
+			| ["object", Object.Configuration<T, TSession>, T]
 			| ["record", Record.Configuration<T, TSession>, T]
-	): _Object<T> | Record<T> | List<T> {
+	): Object<T> | Record<T> | List<T> {
 		const result =
 			argument[0] == "object"
 				? new Handler.Object(this, argument[1], argument[2])
@@ -62,10 +62,10 @@ export class Factory<
 		})
 		return session
 	}
-	reload<T>(object: _Object<T>, property: string): void
+	reload<T>(object: Object<T>, property: string): void
 	reload<T>(record: Record<T>, property: string): void
 	reload<T>(list: List<T>, event: "change"): void
-	reload<T>(session: _Object<T> | Record<T> | List<T>, event: string): void {
+	reload<T>(session: Object<T> | Record<T> | List<T>, event: string): void {
 		this.handlers.get(session)?.reload(event)
 	}
 	static create<TSession extends Listenable<globalThis.Record<string | number, any>>>(): Factory<TSession> {

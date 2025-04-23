@@ -1,16 +1,16 @@
 import { typedly } from "typedly"
 import { Listenable } from "../../Listenable"
-import { _Object } from "../../Object"
+import { Object } from "../../Object"
 import type { Factory } from "../index"
 import { navigation } from "../navigation"
 import { Handler as Base } from "./Base"
 
-export class ObjectHandler<T> extends Base<_Object<T>> {
+export class ObjectHandler<T> extends Base<Object<T>> {
 	private backend: () => T
-	private configuration: ObjectHandler.Configuration<_Object.Configuration<any, any>, any>
-	constructor(factory: Factory, configuration: _Object.Configuration<T>, backend: T) {
+	private configuration: ObjectHandler.Configuration<Object.Configuration<any, any>, any>
+	constructor(factory: Factory, configuration: Object.Configuration<T>, backend: T) {
 		const processed = ObjectHandler.processConfiguration(configuration)
-		const { result, ...internals } = _Object.create(processed, backend, factory)
+		const { result, ...internals } = Object.create(processed, backend, factory)
 		super(factory, result)
 		this.backend = internals.backend
 		this.configuration = processed as any
@@ -62,10 +62,10 @@ export class ObjectHandler<T> extends Base<_Object<T>> {
 		}
 	}
 	private static processConfiguration<T>(
-		configuration: _Object.Configuration<T, any>
-	): ObjectHandler.Configuration<_Object.Configuration<T, any>, any> {
+		configuration: Object.Configuration<T, any>
+	): ObjectHandler.Configuration<Object.Configuration<T, any>, any> {
 		return typedly.Object.entries(configuration).reduce<
-			Partial<ObjectHandler.Configuration<_Object.Configuration<T, any>, any>>
+			Partial<ObjectHandler.Configuration<Object.Configuration<T, any>, any>>
 		>((result, [property, configuration]) => {
 			return {
 				...result,
@@ -79,27 +79,27 @@ export class ObjectHandler<T> extends Base<_Object<T>> {
 					}),
 				},
 			}
-		}, {}) as ObjectHandler.Configuration<_Object.Configuration<T, any>, any>
+		}, {}) as ObjectHandler.Configuration<Object.Configuration<T, any>, any>
 	}
 }
 export namespace ObjectHandler {
 	export type Configuration<
-		TConfiguration extends _Object.Configuration<unknown>,
+		TConfiguration extends Object.Configuration<unknown>,
 		TSession = unknown
-	> = TConfiguration extends _Object.Configuration<infer T>
+	> = TConfiguration extends Object.Configuration<infer T>
 		? {
 				[Property in keyof TConfiguration]?: Property extends keyof T
 					? {
-							[Configuration in keyof _Object.Configuration.Property<
+							[Configuration in keyof Object.Configuration.Property<
 								T,
 								Property,
 								T[Property],
 								TSession
 							>]?: Configuration extends "load"
 								? typedly.Promise.Lazy<
-										Required<_Object.Configuration.Property<T, Property, T[Property], TSession>>["load"]
+										Required<Object.Configuration.Property<T, Property, T[Property], TSession>>["load"]
 								  >
-								: _Object.Configuration.Property<T, Property, T[Property], TSession>[Configuration]
+								: Object.Configuration.Property<T, Property, T[Property], TSession>[Configuration]
 					  }
 					: never
 		  }

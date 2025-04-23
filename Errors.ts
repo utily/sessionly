@@ -1,14 +1,14 @@
 import { gracely } from "gracely"
 import { List } from "./List"
-import { _Object } from "./Object"
+import { Object } from "./Object"
 
 export interface Errors {
 	stack: List<gracely.Error>
 	handle: <T>(response: T | gracely.Error) => T | false
 }
 export namespace Errors {
-	export function create(): _Object<Errors> {
-		const errors = _Object.create<Errors>(
+	export function create(): Object<Errors> {
+		const errors = Object.create<Errors>(
 			{},
 			{
 				stack: List.create<gracely.Error>({}, []),
